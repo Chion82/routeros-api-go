@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 )
 
 // Encode and send a single line
@@ -12,10 +13,14 @@ func (c *Client) send(word string) error {
 	bword := []byte(word)
 	prefix := prefixlen(len(bword))
 
+	c.conn.SetWriteDeadline(time.Now().Add(time.Duration(c.Timeout) * time.Second))
+
 	_, err := c.conn.Write(prefix.Bytes())
 	if err != nil {
 		return err
 	}
+
+	c.conn.SetWriteDeadline(time.Now().Add(time.Duration(c.Timeout) * time.Second))
 
 	_, err = c.conn.Write(bword)
 	if err != nil {
@@ -49,6 +54,8 @@ func (c *Client) receive() (reply Reply, err error) {
 		if length == 0 && done {
 			break
 		}
+
+		c.conn.SetReadDeadline(time.Now().Add(time.Duration(c.Timeout) * time.Second))
 
 		inbuf := make([]byte, length)
 		n, err := io.ReadAtLeast(c.conn, inbuf, int(length))

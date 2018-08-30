@@ -57,6 +57,7 @@ type Client struct {
 	debug    bool     // debug logging enabled
 	ready    bool     // Ready for work (login ok and connection not terminated)
 	conn     net.Conn // Connection to pass around
+	Timeout  int
 	TLSConfig *tls.Config
 }
 
@@ -94,6 +95,7 @@ func New(address string) (*Client, error) {
 
 	var c Client
 	c.address = address
+	c.Timeout = 5
 
 	return &c, nil
 }
