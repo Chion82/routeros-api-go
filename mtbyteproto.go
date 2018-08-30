@@ -9,7 +9,7 @@ type mtbyteprotoError error
 
 // Get just one byte because MT's size prefix is overoptimized
 func (c *Client) getone() int {
-	c.conn.SetReadDeadline(time.Now().Add(time.Duration(c.Timeout) * time.Second))
+	c.conn.SetReadDeadline(time.Now().Add(c.Timeout))
 
 	charlet := make([]byte, 1)
 	_, err := c.conn.Read(charlet)

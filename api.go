@@ -9,6 +9,7 @@ import (
 	"io"
 	"net"
 	"strings"
+	"time"
 )
 
 // A reply can contain multiple pairs. A pair is a string key->value.
@@ -57,7 +58,7 @@ type Client struct {
 	debug    bool     // debug logging enabled
 	ready    bool     // Ready for work (login ok and connection not terminated)
 	conn     net.Conn // Connection to pass around
-	Timeout  int
+	Timeout  time.Duration
 	TLSConfig *tls.Config
 }
 
@@ -95,7 +96,7 @@ func New(address string) (*Client, error) {
 
 	var c Client
 	c.address = address
-	c.Timeout = 5
+	c.Timeout = 5 * time.Second
 
 	return &c, nil
 }
@@ -110,7 +111,8 @@ func (c *Client) Connect(user string, password string) error {
 	if c.TLSConfig != nil {
 		c.conn, err = tls.Dial("tcp", c.address, c.TLSConfig)
 	} else {
-		c.conn, err = net.Dial("tcp", c.address)
+		d := net.Dialer{Timeout: c.Timeout}
+		c.conn, err = d.Dial("tcp", c.address)
 	}
 	if err != nil {
 		return err
