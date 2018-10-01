@@ -72,6 +72,7 @@ func (c *Client) receive() (reply Reply, err error) {
 		word := string(inbuf)
 		if word == "!done" {
 			done = true
+			re = false
 			continue
 		}
 
@@ -98,6 +99,9 @@ func (c *Client) receive() (reply Reply, err error) {
 			if len(parts) == 3 {
 				key = parts[1]
 				val = parts[2]
+			} else if  len(parts) == 2 {
+				key = parts[0]
+				val = parts[1]
 			} else {
 				key = parts[1]
 			}
@@ -137,4 +141,12 @@ func (c *Client) receive() (reply Reply, err error) {
 	}
 
 	return reply, nil
+}
+
+func (c *Client) WriteWord(word string) error {
+	return c.send(word)
+}
+
+func (c *Client) Receive() (reply Reply, err error) {
+	return c.receive()
 }

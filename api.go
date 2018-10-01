@@ -102,7 +102,9 @@ func New(address string) (*Client, error) {
 }
 
 func (c *Client) Close() {
-	c.conn.Close()
+	if c.conn != nil {
+		c.conn.Close()
+	}
 }
 
 func (c *Client) Connect(user string, password string) error {
