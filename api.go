@@ -107,8 +107,7 @@ func (c *Client) Close() {
 	}
 }
 
-func (c *Client) Connect(user string, password string) error {
-
+func (c *Client) Dial() error {
 	var err error
 	if c.TLSConfig != nil {
 		c.conn, err = tls.Dial("tcp", c.address, c.TLSConfig)
@@ -116,6 +115,39 @@ func (c *Client) Connect(user string, password string) error {
 		d := net.Dialer{Timeout: c.Timeout}
 		c.conn, err = d.Dial("tcp", c.address)
 	}
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) ConnectNew(user string, password string) error {
+	var err error
+
+	err = c.Dial()
+	if err != nil {
+		return err
+	}
+
+	var loginParams []Pair
+	loginParams = append(loginParams, *NewPair("name", user))
+	loginParams = append(loginParams, *NewPair("password", password))
+
+	// try to log in
+	_, err = c.Call("/login", loginParams)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) Connect(user string, password string) error {
+
+	var err error
+
+	err = c.Dial()
 	if err != nil {
 		return err
 	}
@@ -129,7 +161,8 @@ func (c *Client) Connect(user string, password string) error {
 	// handle challenge/response
 	challengeEnc, err := res.GetPairVal("ret")
 	if err != nil {
-		return errors.New("Didn't get challenge from ROS")
+		c.Close()
+		return c.ConnectNew(user, password)
 	}
 	challenge, err := hex.DecodeString(challengeEnc)
 	if err != nil {
@@ -147,7 +180,8 @@ func (c *Client) Connect(user string, password string) error {
 	// try to log in again with challenge/response
 	res, err = c.Call("/login", loginParams)
 	if err != nil {
-		return err
+		c.Close()
+		return c.ConnectNew(user, password)
 	}
 
 	if len(res.Pairs) > 0 {
