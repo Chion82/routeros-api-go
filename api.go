@@ -242,7 +242,12 @@ func (c *Client) Call(command string, params []Pair) (Reply, error) {
 	// send params if we got them
 	if len(params) > 0 {
 		for _, v := range params {
-			word := fmt.Sprintf("=%s=%s", v.Key, v.Value)
+			var word string
+			if strings.HasPrefix(v.Key, ".") {
+				word = fmt.Sprintf("%s=%s", v.Key, v.Value)
+			} else {
+				word = fmt.Sprintf("=%s=%s", v.Key, v.Value)
+			}
 			c.send(word)
 		}
 	}
