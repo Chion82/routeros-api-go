@@ -260,7 +260,7 @@ func (c *Client) Call(command string, params []Pair) (Reply, error) {
 
 	res, err := c.receive()
 	if err != nil {
-		return Reply{}, err
+		return res, err
 	}
 
 	return res, nil
