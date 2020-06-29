@@ -243,7 +243,7 @@ func (c *Client) Call(command string, params []Pair) (Reply, error) {
 	if len(params) > 0 {
 		for _, v := range params {
 			var word string
-			if strings.HasPrefix(v.Key, ".") {
+			if v.Key == ".tag" {
 				word = fmt.Sprintf("%s=%s", v.Key, v.Value)
 			} else {
 				word = fmt.Sprintf("=%s=%s", v.Key, v.Value)
